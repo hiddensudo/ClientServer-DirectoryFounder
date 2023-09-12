@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <string.h>
+#include <cstring>
 #include <stdlib.h>
 #include <unistd.h>
 #include <arpa/inet.h>
@@ -11,6 +12,9 @@
 #define SERVER_MSG "SERVER MESSAGE: "
 #define SERVER_ERROR "SERVER ERROR: "
 #define CLOSE_CONNECTION_SYMBOL '#'
+
+#define PATH_PREFIX "PATH:"
+#define WANTED_FILE_PREFIX "WANTED:"
 
 #define PORT 3001
 #define BUFFER_SIZE 1024
@@ -26,11 +30,31 @@ bool close_connection(const char* msg) {
     }
 }
 
+void sendPath(int server, const std::string& messagePrefix) {
+    char buffer[BUFFER_SIZE];
+    
+    std::cout << "Enter " << messagePrefix << " directory" << std::endl;
+    std::cout << ">>> ";
+    std::cin.getline(buffer, BUFFER_SIZE);
+    
+    std::string inputString = buffer;
+    std::string resultString = messagePrefix + inputString;
+    
+    // Копіюємо рядок у буфер та надсилаємо його на сервер
+    std::strncpy(buffer, resultString.c_str(), sizeof(buffer));
+    send(server, buffer, BUFFER_SIZE, 0);
+}
+
 
 int main() {
     //Create socket
     int client;
     int server;
+    char* pathPrefix = "path:";
+    char* wantedDirPrefix = "wantedDir:";
+
+    std::string inputString;
+    std::string resultString;
 
     struct sockaddr_in server_address;
 
@@ -67,7 +91,7 @@ int main() {
     while(server > 0) {
         strcpy(buffer, "Server connected");
         send(server, buffer, BUFFER_SIZE, 0);
-        std::cout << SERVER_MSG << "Connected to the client" << std::endl
+        std::cout << SERVER_MSG << "Connected to the client" << std::endl 
             << "Enter " << CLOSE_CONNECTION_SYMBOL << " to end the connection" << std::endl;
 
         if(close_connection(buffer)) {
@@ -78,11 +102,18 @@ int main() {
             //send message from server to client
             std::cout << ">>> ";
             std::cin.getline(buffer, BUFFER_SIZE);
-            send(server, buffer, BUFFER_SIZE, 0);
+            std::string receivedMessage(buffer);
             if(close_connection(buffer)) {
+                send(server, buffer, BUFFER_SIZE, 0);
                 break;
             }
             
+            if(receivedMessage.find("/getpath") == 0) {
+                sendPath(server, PATH_PREFIX);
+                sendPath(server, WANTED_FILE_PREFIX);
+            }
+            
+            receivedMessage = "";
             //get message from client to server
             /*
             recv(server, buffer, BUFFER_SIZE, 0);

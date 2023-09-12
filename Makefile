@@ -3,8 +3,8 @@ all: server client
 server:
 	g++ server.cpp -o server
 
-client:
-	g++ client.cpp -o client
+client: finpath/findPath.cpp client.cpp
+	g++ finpath/findPath.cpp client.cpp -o client
 
 server_run:
 	./server

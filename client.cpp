@@ -8,10 +8,15 @@
 #include <netdb.h>
 #include <netinet/in.h>
 
+#include "PathFounder/PathFounder.h"
+
 #define IP "127.0.0.1"
 #define SERVER_MSG "CLIENT MESSAGE: "
 #define SERVER_ERROR "CLIENT ERROR: "
 #define CLOSE_CONNECTION_SYMBOL '#'
+
+#define PATH_PREFIX "PATH:"
+#define WANTED_FILE_PREFIX "WANTED:"
 
 #define PORT 3001
 #define BUFFER_SIZE 1024
@@ -53,6 +58,9 @@ int main() {
     std::cout << "Connection established." << std::endl
             << "Enter " << CLOSE_CONNECTION_SYMBOL << " for close the connection" << std::endl;
     
+    std::string startPath;
+    std::string wantedDir;
+
     bool is_enter = false;
     while(!is_enter) {
         //send message from client to server
@@ -63,14 +71,28 @@ int main() {
         //if(close_connection(buffer)) {
         //    break;
         //}
-        
+
 
         //get message from server to client
-        std::cout << "Server: ";
         recv(client, buffer, BUFFER_SIZE, 0);
-        std::cout << buffer << std::endl;
         if(close_connection(buffer)) {
             is_enter = true;
+        }
+        std::cout << "Server: " << buffer << std::endl;
+
+        std::string receivedMessage(buffer);
+        if (receivedMessage.find(PATH_PREFIX) == 0) {
+            size_t pos = receivedMessage.find(':');
+
+            startPath = receivedMessage.substr(pos+1);
+        }
+
+        if(receivedMessage.find(WANTED_FILE_PREFIX) == 0) {
+            size_t pos = receivedMessage.find(':');
+            wantedDir = receivedMessage.substr(pos+1);
+            PathFounder f(startPath, wantedDir);
+            f.processDirectory(startPath, wantedDir);
+            std::cout << std::endl;
         }
     }
 
