@@ -31,10 +31,10 @@ bool close_connection(const char* msg) {
     }
 }
 
-
 int main() {
     int client;
     struct sockaddr_in server_address;
+    bool isFound = false;
 
     client = socket(AF_INET, SOCK_STREAM, 0);
     if(client < 0) {
@@ -91,7 +91,9 @@ int main() {
             size_t pos = receivedMessage.find(':');
             wantedDir = receivedMessage.substr(pos+1);
             PathFounder f(startPath, wantedDir);
+
             f.processDirectory(startPath, wantedDir);
+
             std::cout << std::endl;
         }
     }

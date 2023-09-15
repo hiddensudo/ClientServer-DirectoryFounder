@@ -50,9 +50,6 @@ int main() {
     //Create socket
     int client;
     int server;
-    char* pathPrefix = "path:";
-    char* wantedDirPrefix = "wantedDir:";
-
     std::string inputString;
     std::string resultString;
 
