@@ -41,14 +41,14 @@ Connection closed!
 Enter y/n to kill server/keep server on
 >>> 
 ```
-
-If you want to quit and kill the server, you can enter `n` 
+If you want to continue working with another client, you need to write `n`. After that, the server will wait for another client/
 ```
 Enter y/n to kill server/keep server on
 >>> n
 SERVER MESSAGE: Connected to the client
 ```
-And if you want to continue working with another client, you need to write `y`. After that, the server will wait for another client/
+
+And if you want to quit and kill the server, you can enter `y` 
 ```
 Enter y/n to kill server/keep server on
 >>> y
