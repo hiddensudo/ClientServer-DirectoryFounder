@@ -11,10 +11,14 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <thread>
+#include <vector>
 
 #define SERVER_MSG "SERVER MESSAGE: "
 #define SERVER_ERROR "SERVER ERROR: "
 #define CLOSE_CONNECTION_SYMBOL '#'
+#define KILL_SERVER_SYMBOL 'y'
+#define KEEP_SERVER_SYMBOL 'n'
 
 #define PATH_PREFIX "PATH:"
 #define WANTED_FILE_PREFIX "WANTED:"
@@ -41,11 +45,13 @@ public:
     void createSocket();
     void initializeServerAddress();
     void bindingSocket();
-    void listetingSocket();
+    void listeningSocket();
     void acceptingClient();
     void getMessage();
     void sendMessage();
     bool isConnectionClosed(const char* msg);
+    bool isServerKilled(const char* msg);
+    void killServer();
     void run();
 
     void sendPath(const std::string& messagePrefix);

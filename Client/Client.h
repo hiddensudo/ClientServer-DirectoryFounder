@@ -5,6 +5,7 @@
 #include <string>
 #include <string.h>
 #include <stdlib.h>
+#include <cstring>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
@@ -37,6 +38,7 @@ private:
 
     std::string startPath;
     std::string wantedDir;
+    std::string resultPath;
 
 
 public:  
@@ -47,7 +49,7 @@ public:
     void initializeClientAddress();
     void connectingToServer();
     void getMessage();
-    void sendMessage();
+    void sendFullPath();
     void getPath(std::string& receivedMessage);
     void getWantedFileName(std::string& receivedMessage);
     void findPath();

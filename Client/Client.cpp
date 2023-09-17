@@ -38,9 +38,11 @@ void Client::getMessage() {
     std::cout << "Server: " << this->buffer << std::endl;
 }
 
-void Client::sendMessage() {
-
+void Client::sendFullPath() {
+    std::strncpy(this->buffer, this->resultPath.c_str(), sizeof(this->buffer));
+    send(this->client, this->buffer, BUFFER_SIZE, 0);
 }
+
 
 void Client::getPath(std::string& receivedMessage) {
     if (receivedMessage.find(PATH_PREFIX) == 0) {
@@ -51,8 +53,9 @@ void Client::getPath(std::string& receivedMessage) {
 
 void Client::findPath() {
     PathFounder f(this->startPath, this->wantedDir);
-
-    f.processDirectory(this->startPath, this->wantedDir);
+    f.run(this->startPath);
+    this->resultPath = f.getResultPath();
+    sendFullPath();
 }
  
 void Client::getWantedFileName(std::string& receivedMessage) {

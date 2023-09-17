@@ -24,7 +24,7 @@ void Server::bindingSocket() {
     }
 }
 
-void Server::listetingSocket() {
+void Server::listeningSocket() {
     this->size = sizeof(serverAddress);
     std::cout << SERVER_MSG << "Listening clients..." << std::endl;
     listen(client, 1);
@@ -67,6 +67,8 @@ void Server::getMessage() {
     }
     std::cout << "Client: "; 
     std::cout << this->buffer;
+
+    std::cout << std::endl;
 }
 
 bool Server::isConnectionClosed(const char* msg) {
@@ -75,6 +77,33 @@ bool Server::isConnectionClosed(const char* msg) {
             return true;
         }
         return false;
+    }
+}
+
+bool Server::isServerKilled(const char* msg) {
+    for(int i = 0; i < strlen(msg); ++i) {
+        if(msg[i] == KILL_SERVER_SYMBOL) {
+            return true;
+        } else if(msg[i] == KEEP_SERVER_SYMBOL) {
+            return false;
+        } else {
+            std::cout << "Missing y/n. Try again!" << std::endl;
+            std::cout << ">>> ";
+        }
+        return false;
+    }
+}
+
+void Server::killServer() {
+    std::cout << "Enter y/n to kill server/keep server on" << std::endl;
+    std::cout << ">>> ";
+    while(std::cin.getline(this->buffer, BUFFER_SIZE)) {
+        if(isServerKilled(this->buffer)) {
+            this->server = -1;
+            break;
+        } else {
+            break;
+        }
     }
 }
 
@@ -99,7 +128,7 @@ void Server::run() {
             if(receivedMessage.find("/getpath") == 0) {
                 sendPath(PATH_PREFIX);
                 sendPath(WANTED_FILE_PREFIX);
-                //getMessage();
+                getMessage();
             }
             
             //receivedMessage.clear();
@@ -111,10 +140,14 @@ void Server::run() {
         std::cout << "\nConnection closed!" << std::endl;
         this->isExit = false;
 
-        acceptingClient();
+        std::thread acceptingThread(&Server::acceptingClient, this);
+        std::thread killThread(&Server::killServer, this);
+        acceptingThread.detach();
+        killThread.join();
     }
-    close(this->client);
 
+    std::cout << "Server process killed" << std::endl;
+    close(this->client);
     close(this->server); 
 }
 

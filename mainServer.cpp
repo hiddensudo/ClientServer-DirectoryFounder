@@ -5,12 +5,8 @@ int main() {
     server.createSocket();
     server.initializeServerAddress();
     server.bindingSocket();
-    server.listetingSocket();
-
-    while (true)
-    {
-        server.acceptingClient();
-        server.run();
-    }    
+    server.listeningSocket();
+    server.acceptingClient();
+    server.run();
     return 0;
 }
