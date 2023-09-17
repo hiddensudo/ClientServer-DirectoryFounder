@@ -21,11 +21,12 @@ void PathFounder::run(const std::string &startDirectory) {
 
 void PathFounder::processDirectory(const std::string &startDirectory) {
     try {
+        //std::cout << "Thread " << std::this_thread::get_id() << " is processing directory: " << startDirectory << std::endl;
         for(const auto &entry : std::filesystem::directory_iterator(startDirectory)) {
             if(!this->isNotFound) {
                 break;
             }
-            if(entry.is_directory() && entry.path().filename() != this->wantedDir) {
+            if(entry.is_directory() && entry.path().filename() != this->wantedDir && entry.path() != "/proc") {
                 std::unique_lock<std::mutex> lock(queueMutex);
 
                 this->directoriesQueue.push(entry.path().string());
@@ -40,7 +41,7 @@ void PathFounder::processDirectory(const std::string &startDirectory) {
         } 
     }   catch(const std::filesystem::filesystem_error &e) {
         if(this->isNotFound) {
-            std::cout << e.what() << std::endl;
+            //std::cout << e.what() << std::endl;
         }
     }
 }
@@ -59,14 +60,15 @@ void PathFounder::searchDirectory() {
                 queueCV.wait(lock);
             } else {
                 currentDirectory = directoriesQueue.front();
-                directoriesQueue.pop();
-                activeThreads++;
+                this->directoriesQueue.pop();
+                this->activeThreads++;
             }
         }
 
         if(!currentDirectory.empty()) {
             processDirectory(currentDirectory);
         }
+        this->activeThreads--;
     }
 }
 
