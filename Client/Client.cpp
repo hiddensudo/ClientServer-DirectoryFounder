@@ -53,7 +53,7 @@ void Client::getPath(std::string& receivedMessage) {
 
 void Client::findPath() {
     PathFounder f(this->startPath, this->wantedDir);
-    f.run(this->startPath);
+    f.run();
     this->resultPath = f.getResultPath();
     sendFullPath();
 }

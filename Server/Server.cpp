@@ -131,15 +131,14 @@ void Server::run() {
                 getMessage();
             }
             
-            //receivedMessage.clear();
-
             //get message from client;
             //getMessage();
         }
 
         std::cout << "\nConnection closed!" << std::endl;
         this->isExit = false;
-
+        
+        //if we leave the server on, then the server looks for a new client to connect to
         std::thread acceptingThread(&Server::acceptingClient, this);
         std::thread killThread(&Server::killServer, this);
         acceptingThread.detach();

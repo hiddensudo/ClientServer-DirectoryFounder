@@ -17,7 +17,7 @@ private:
     std::string wantedDir;
     std::string resultPath;
 
-    std::atomic<int> activeThreads{0};
+    std::atomic<unsigned int> activeThreads; //counts the number of threads that process directories
     std::queue<std::string> directoriesQueue;
     std::mutex queueMutex;
     std::condition_variable queueCV;
@@ -27,10 +27,10 @@ private:
 public:
     PathFounder(const std::string &startDirectory, const std::string &wantedDir);
     void searchDirectory();
-    void run(const std::string &startDirectory);
+    void run();
     void processDirectory(const std::string &startDirectory);
     void processing();
-    
+    void reset();
     std::string getResultPath();
 };
 

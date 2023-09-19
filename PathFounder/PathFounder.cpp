@@ -1,27 +1,30 @@
 #include "PathFounder.h"
 
-void PathFounder::run(const std::string &startDirectory) {
-    const unsigned int maxThreads = std::thread::hardware_concurrency() - 1;
+void PathFounder::run() {
+    reset();
+
+    const unsigned int maxThreads = std::thread::hardware_concurrency();
     
     std::vector<std::thread> threads;
-    for(unsigned int i = 0; i < maxThreads; ++i) {
+    for(unsigned int i = 0; i < maxThreads - 1; ++i) {
         threads.emplace_back(&PathFounder::searchDirectory, this);
     }
 
-
     std::thread processingThread(&PathFounder::processing, this);
-
 
     for (auto &thread : threads) {
         thread.join();
     }
     processingThread.join();
+
+    if(this->resultPath.empty() && directoriesQueue.empty()) {
+        this->resultPath = "Directory was not found!";
+    }
 }
 
-
+// Adds directories to the queue and checks if this directory is the one the server wants to find.
 void PathFounder::processDirectory(const std::string &startDirectory) {
     try {
-        //std::cout << "Thread " << std::this_thread::get_id() << " is processing directory: " << startDirectory << std::endl;
         for(const auto &entry : std::filesystem::directory_iterator(startDirectory)) {
             if(!this->isNotFound) {
                 break;
@@ -35,7 +38,6 @@ void PathFounder::processDirectory(const std::string &startDirectory) {
                 this->queueCV.notify_one();
             } else if(entry.is_directory() && entry.path().filename() == this->wantedDir) {
                 this->resultPath = "Full path to the directory -> " + entry.path().string();
-                std::cout << "Thread " << std::this_thread::get_id() << entry.path() << std::endl;
                 this->isNotFound = false;
             }
         } 
@@ -46,29 +48,45 @@ void PathFounder::processDirectory(const std::string &startDirectory) {
     }
 }
 
-
+// Synchronizes threads for parallel execution of the processDirectory method
 void PathFounder::searchDirectory() {
-    while(this->isNotFound) {
+    while (this->isNotFound) {
         std::string currentDirectory;
         {
             std::unique_lock<std::mutex> lock(queueMutex);
 
-            if(this->directoriesQueue.empty()) {
-                if(this->activeThreads == 0) {
-                    break;
+            if (this->directoriesQueue.empty()) {
+                if (this->activeThreads == 0) {
+                    this->isNotFound = false;
+                    queueCV.notify_all();
+                    return;
+                } else {
+                    queueCV.wait(lock);
                 }
-                queueCV.wait(lock);
             } else {
                 currentDirectory = directoriesQueue.front();
                 this->directoriesQueue.pop();
-                this->activeThreads++;
             }
         }
 
-        if(!currentDirectory.empty()) {
+        if (!currentDirectory.empty()) {
+            {
+                std::unique_lock<std::mutex> lock(queueMutex);
+                this->activeThreads++;
+            }
             processDirectory(currentDirectory);
+            {
+                std::unique_lock<std::mutex> lock(queueMutex);
+                this->activeThreads--;
+                if (this->activeThreads == 0 && this->directoriesQueue.empty()) {
+                    this->isNotFound = false;
+                    queueCV.notify_all();
+                    return;
+                } else {
+                    queueCV.notify_one();
+                }
+            }
         }
-        this->activeThreads--;
     }
 }
 
@@ -83,9 +101,19 @@ std::string PathFounder::getResultPath() {
     return this->resultPath;
 }
 
+//If the directory is found, the queue may not be empty, so we reset it
+void PathFounder::reset() {
+    while(!directoriesQueue.empty()) {
+        directoriesQueue.pop();
+    }
+    directoriesQueue.push(this->startPath);
+}
+
 
 PathFounder::PathFounder(const std::string &startPath, const std::string &wantedDir) {
-    this->directoriesQueue.push(startPath);
+    this->startPath = startPath;
+    this->directoriesQueue.push(this->startPath);
     this->wantedDir = wantedDir;
     this->isNotFound = true;
+    this->activeThreads = 0;   
 }
