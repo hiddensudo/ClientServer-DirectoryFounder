@@ -1,11 +1,12 @@
 #include "PathFounder.h"
 
-void PathFounder::run() {
+void PathFounder::run() { // Fix naming
+
     reset();
 
     const unsigned int maxThreads = std::thread::hardware_concurrency();
     
-    std::vector<std::thread> threads;
+    std::vector<std::thread> threads; // reserve
     for(unsigned int i = 0; i < maxThreads - 1; ++i) {
         threads.emplace_back(&PathFounder::searchDirectory, this);
     }
@@ -18,7 +19,8 @@ void PathFounder::run() {
     processingThread.join();
 
     if(this->resultPath.empty() && directoriesQueue.empty()) {
-        this->resultPath = "Directory was not found!";
+        std::optional
+        this->resultPath = "Directory was not found!"; // it is not resultPath - optional?
     }
 }
 
@@ -37,7 +39,7 @@ void PathFounder::processDirectory(const std::string &startDirectory) {
 
                 this->queueCV.notify_one();
             } else if(entry.is_directory() && entry.path().filename() == this->wantedDir) {
-                this->resultPath = "Full path to the directory -> " + entry.path().string();
+                this->resultPath = "Full path to the directory -> " + entry.path().string(); // race condition
                 this->isNotFound = false;
             }
         } 
@@ -50,7 +52,7 @@ void PathFounder::processDirectory(const std::string &startDirectory) {
 
 // Synchronizes threads for parallel execution of the processDirectory method
 void PathFounder::searchDirectory() {
-    while (this->isNotFound) {
+    while (this->isNotFound) { // Bad naming
         std::string currentDirectory;
         {
             std::unique_lock<std::mutex> lock(queueMutex);
@@ -70,10 +72,7 @@ void PathFounder::searchDirectory() {
         }
 
         if (!currentDirectory.empty()) {
-            {
-                std::unique_lock<std::mutex> lock(queueMutex);
                 this->activeThreads++;
-            }
             processDirectory(currentDirectory);
             {
                 std::unique_lock<std::mutex> lock(queueMutex);
@@ -92,7 +91,7 @@ void PathFounder::searchDirectory() {
 
 void PathFounder::processing() {
     while(this->isNotFound) {
-        std::cout << "Processing..." << std::endl;
+        std::cout << "Processing..." << std::endl; // usage of std::cout in multiple threads
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 }

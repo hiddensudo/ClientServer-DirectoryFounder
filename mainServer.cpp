@@ -1,6 +1,7 @@
 #include "Server/Server.h"
 
 int main() {
+    // simple run or initialize would be enough
     Server server;
     server.createSocket();
     server.initializeServerAddress();

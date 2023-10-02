@@ -14,6 +14,10 @@
 #include <thread>
 #include <vector>
 
+// get rid of defines
+// all constants should be used as close as possible to usage of constants
+
+static constexpr std::string_view
 #define SERVER_MSG "SERVER MESSAGE: "
 #define SERVER_ERROR "SERVER ERROR: "
 #define CLOSE_CONNECTION_SYMBOL '#'
@@ -23,13 +27,14 @@
 #define PATH_PREFIX "PATH:"
 #define WANTED_FILE_PREFIX "WANTED:"
 
+static constexpr size_t
 #define PORT 3000
 #define BUFFER_SIZE 1024
 
 class Server
 {
 private:
-    int client;
+    int client;// clientSock ServerSock
     int server;
     bool isExit;
 

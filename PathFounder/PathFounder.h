@@ -11,6 +11,8 @@
 #include <mutex>
 #include <condition_variable>
 
+// chrono filesystem not used here, move to cpp file
+
 class PathFounder {
 private:
     std::string startPath;

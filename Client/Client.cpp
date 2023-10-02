@@ -1,6 +1,6 @@
 #include "Client.h"
 
-void Client::createSocket() {
+void Client::createSocket() { // move general with server functionality to common file
     this->client = socket(AF_INET, SOCK_STREAM, 0);
     if(this->client < 0) {
         std::cout << SERVER_ERROR << "establishing socket error";
@@ -21,7 +21,7 @@ void Client::connectingToServer() {
     }
 }
 
-bool Client::isConnectionClosed(const char* msg) {
+bool Client::isConnectionClosed(const char* msg) { // check whether endpoint is available
     for(int i = 0; i < strlen(msg); ++i) {
         if(msg[i] == CLOSE_CONNECTION_SYMBOL) {
             return true;
@@ -40,7 +40,7 @@ void Client::getMessage() {
 
 void Client::sendFullPath() {
     std::strncpy(this->buffer, this->resultPath.c_str(), sizeof(this->buffer));
-    send(this->client, this->buffer, BUFFER_SIZE, 0);
+    send(this->client, this->buffer, BUFFER_SIZE, 0); // just send this->resultPath.c_str()
 }
 
 
@@ -48,24 +48,25 @@ void Client::getPath(std::string& receivedMessage) {
     if (receivedMessage.find(PATH_PREFIX) == 0) {
         size_t pos = receivedMessage.find(':');
         this->startPath = receivedMessage.substr(pos+1);
-    }
+    } // I don't see error handling
+    // What if server didn't send us PATH_PREFIX
 }
 
 void Client::findPath() {
-    PathFounder f(this->startPath, this->wantedDir);
+    PathFounder f(this->startPath, this->wantedDir); // Should it be separate class?
     f.run();
-    this->resultPath = f.getResultPath();
+    this->resultPath = f.getResultPath(); // may be a function variable
     sendFullPath();
 }
  
-void Client::getWantedFileName(std::string& receivedMessage) {
+void Client::getWantedFileName(std::string& receivedMessage) { // fileName???
     if(receivedMessage.find(WANTED_FILE_PREFIX) == 0) {
         size_t pos = receivedMessage.find(':');
         this->wantedDir = receivedMessage.substr(pos+1);
         
-        findPath();
+        aiuto resultPath = findPath();
 
-        std::cout << std::endl;
+        std::cout << std::endl; // Why should we do it here?
     }
 }
 

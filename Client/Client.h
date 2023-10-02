@@ -12,7 +12,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 
-#include "../PathFounder/PathFounder.h"
+#include "../PathFounder/PathFounder.h" // fix it in cmake
 
 #define IP "127.0.0.2"
 #define SERVER_MSG "CLIENT MESSAGE: "

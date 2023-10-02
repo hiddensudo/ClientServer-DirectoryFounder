@@ -3,7 +3,7 @@
 void Server::createSocket() {
     this->client = socket(AF_INET, SOCK_STREAM, 0);
     if(client < 0) {
-        std::cout << SERVER_ERROR << "establishing socket error" << std::endl;
+        std::cout << SERVER_ERROR << "establishing socket error" << std::endl; // errno
         exit(1);
     }
 
@@ -38,7 +38,7 @@ void Server::acceptingClient() {
 }
 
 void Server::sendPath(const std::string& messagePrefix) {
-    char buffer[BUFFER_SIZE];
+    char buffer[BUFFER_SIZE]; // Not used
     
     std::cout << "Enter " << messagePrefix << " directory" << std::endl;
     std::cout << ">>> ";
@@ -126,7 +126,7 @@ void Server::run() {
             std::string receivedMessage(this->buffer);
 
             if(receivedMessage.find("/getpath") == 0) {
-                sendPath(PATH_PREFIX);
+                sendPath(PATH_PREFIX);  // Gets input from user
                 sendPath(WANTED_FILE_PREFIX);
                 getMessage();
             }
@@ -140,18 +140,17 @@ void Server::run() {
         
         //if we leave the server on, then the server looks for a new client to connect to
         std::thread acceptingThread(&Server::acceptingClient, this);
-        std::thread killThread(&Server::killServer, this);
         acceptingThread.detach();
-        killThread.join();
+        killServer();
     }
 
     std::cout << "Server process killed" << std::endl;
-    close(this->client);
+    close(this->client); // destructor
     close(this->server); 
 }
 
-Server::Server() {
+Server::Server() { // initializer list
     this->isExit = false;
 }
 
-Server::~Server() {};
+Server::~Server() {}; // default?
