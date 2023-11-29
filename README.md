@@ -1,6 +1,6 @@
-# Directory Founder
+# Directory Searcher
 
-Directory Founder is a software application for finding the full path to a directory. To use the software application, you need to run 2 terminals. One will be the server, the other will be the client.
+Directory Searcher is a software application for finding the full path to a directory. To use the software application, you need to run 2 terminals. One will be the server, the other will be the client.
 
 ## Building the Project
 
